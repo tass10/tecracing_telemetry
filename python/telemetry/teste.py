@@ -224,7 +224,7 @@ class Dashboard(QMainWindow):
     def __init__(self):
         super().__init__()
         
-        uic.loadUi("dashboard.ui", self)
+        uic.loadUi("python/telemetry/dashboard.ui", self)
 
         self.gauge1.setRange(0, 12000)
         self.gauge1.setUnits("RPM")
