@@ -31,6 +31,10 @@ Testou-se computacionalmente a aplicação dos filtros FIR e IIR modelados no MA
 
 ![Desempenho da Comunicação a Distância.](Imagens/Pressao_de_Freio_Comparação_de_Filtros_10_Hz.png)
 
+### Atraso de Grupo (Group Delay)
+<p align="justify"> Para avaliar o impacto temporal do processamento digital nos sinais adquiridos, procedeu-se à análise do Atraso de Grupo (Group Delay) das topologias modeladas. Os filtros FIR apresentaram a característica inerente de fase linear, resultando em um retardo constante para todas as frequências: 300 ms para a pressão de freio (6ª ordem) e 700 ms para a temperatura da água (14ª ordem). Em contrapartida, os filtros IIR do tipo Butterworth evidenciaram uma resposta de fase não-linear, onde a defasagem atinge seu valor máximo próximo à frequência de corte. Contudo, ao analisar especificamente a banda de passagem nominal frequência de 0 Hz, onde se concentra a energia útil de ambos os fenômenos físicos, o filtro IIR de freio introduziu um atraso de aproximadamente 134 ms, enquanto o IIR de temperatura inseriu um retardo de cerca de 560 ms. Essa análise temporal ratifica a escolha pela implementação em IIR, visto que, além de demandar um menor custo de processamento devido à baixa ordem, os filtros proporcionam tempos de resposta compatíveis com a dinâmica exigida para a atualização da telemetria em tempo real, mitigando atrasos excessivos que comprometeriam a visualização na interface gráfica. </p>
+
+
 ## PCB:
 
 
