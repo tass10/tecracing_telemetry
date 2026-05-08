@@ -21,8 +21,15 @@ Telemetry and DAQ System for FSAE BR Team TEC Racing
 
 ![Desempenho da Comunicação a Distância.](Imagens/FFT_Pressao_da_Linha_de_Freio.png)
 
-
 Testou-se computacionalmente a aplicação dos filtros FIR e IIR modelados no MATLAB. Verificou-se que os filtros IIR atingiram um desempenho de atenuação de ruído de alta frequência estatisticamente semelhante aos filtros FIR de maior ordem. Devido a essa similaridade de eficiência atrelada a uma considerável redução da complexidade algorítmica e custo computacional, a topologia IIR foi selecionada e implementada de forma definitiva no código receptor.
+
+### Simulação Filtros FIR e IIR - Temperatura da Água:
+
+![Desempenho da Comunicação a Distância.](Imagens/Temperatura_da_Agua_Comparação_de_Filtros_10_Hz.png)
+
+### Simulação Filtros FIR e IIR - Pressão de Freio:
+
+![Desempenho da Comunicação a Distância.](Imagens/Pressao_de_Freio_Comparação_de_Filtros_10_Hz.png)
 
 ## PCB:
 
