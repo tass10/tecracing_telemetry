@@ -42,9 +42,21 @@ Telemetry and DAQ System for FSAE BR Team TEC Racing
 
 ![Desempenho da Comunicação a Distância.](Imagens/Atraso_de_Grupo_Freio.png)
 
-
 ## PCB:
+<p align="justify">A etapa de desenvolvimento de hardware culminou na confecção física de uma PCB Sistema Transmissor, possuindo duas camadas e tamanho de 191,3 mm x 117,3 mm.</p>
 
+<p align="center">
+  <img src="https://github.com/tass10/tecracing_telemetry/blob/main/Imagens/PCB_Sistema_Transmissor.png" alt="PCB Sistema Transmissor" />
+</p>
 
+<p align="center">
+  <img src="https://github.com/tass10/tecracing_telemetry/blob/main/Imagens/pcb3d.png" alt="PCB Sistema Transmissor" />
+</p>
 
 ## Dashboard:
+<p align="justify">No escopo de software, a Interface Homem-Máquina foi implementada com sucesso em Python, via PyQt5, demonstrando estabilidade na leitura assíncrona da porta serial.</p>
+
+### Dashboard Teste Telemetria:
+<p align="center">
+  <img src="https://github.com/tass10/tecracing_telemetry/blob/main/Imagens/Exemplo_Teste_Telemetria.png" alt="PCB Sistema Transmissor" />
+</p>
