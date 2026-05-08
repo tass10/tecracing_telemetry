@@ -21,8 +21,19 @@ Telemetry and DAQ System for FSAE BR Team TEC Racing
 
 ![Desempenho da Comunicação a Distância.](Imagens/FFT_Pressao_da_Linha_de_Freio.png)
 
-
 Testou-se computacionalmente a aplicação dos filtros FIR e IIR modelados no MATLAB. Verificou-se que os filtros IIR atingiram um desempenho de atenuação de ruído de alta frequência estatisticamente semelhante aos filtros FIR de maior ordem. Devido a essa similaridade de eficiência atrelada a uma considerável redução da complexidade algorítmica e custo computacional, a topologia IIR foi selecionada e implementada de forma definitiva no código receptor.
+
+### Simulação Filtros FIR e IIR - Temperatura da Água:
+
+![Desempenho da Comunicação a Distância.](Imagens/Temperatura_da_Agua_Comparação_de_Filtros_10_Hz.png)
+
+### Simulação Filtros FIR e IIR - Pressão de Freio:
+
+![Desempenho da Comunicação a Distância.](Imagens/Pressao_de_Freio_Comparação_de_Filtros_10_Hz.png)
+
+### Atraso de Grupo (Group Delay)
+<p align="justify"> Para avaliar o impacto temporal do processamento digital nos sinais adquiridos, procedeu-se à análise do Atraso de Grupo (Group Delay) das topologias modeladas. Os filtros FIR apresentaram a característica inerente de fase linear, resultando em um retardo constante para todas as frequências: 300 ms para a pressão de freio (6ª ordem) e 700 ms para a temperatura da água (14ª ordem). Em contrapartida, os filtros IIR do tipo Butterworth evidenciaram uma resposta de fase não-linear, onde a defasagem atinge seu valor máximo próximo à frequência de corte. Contudo, ao analisar especificamente a banda de passagem nominal frequência de 0 Hz, onde se concentra a energia útil de ambos os fenômenos físicos, o filtro IIR de freio introduziu um atraso de aproximadamente 134 ms, enquanto o IIR de temperatura inseriu um retardo de cerca de 560 ms. Essa análise temporal ratifica a escolha pela implementação em IIR, visto que, além de demandar um menor custo de processamento devido à baixa ordem, os filtros proporcionam tempos de resposta compatíveis com a dinâmica exigida para a atualização da telemetria em tempo real, mitigando atrasos excessivos que comprometeriam a visualização na interface gráfica. </p>
+
 
 ## PCB:
 
