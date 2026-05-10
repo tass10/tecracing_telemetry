@@ -57,6 +57,12 @@ Telemetry and DAQ System for FSAE BR Team TEC Racing
 <p align="justify">No escopo de software, a Interface Homem-Máquina foi implementada com sucesso em Python, via PyQt5, demonstrando estabilidade na leitura assíncrona da porta serial.</p>
 
 ### Dashboard Teste Telemetria:
+Dashboard usado no teste de distância:
 <p align="center">
   <img src="https://github.com/tass10/tecracing_telemetry/blob/main/Imagens/Exemplo_Teste_Telemetria.png" alt="PCB Sistema Transmissor" />
+</p>
+
+Dashboard Demonstração:
+<p align="center">
+  <img src="https://github.com/tass10/tecracing_telemetry/blob/main/Imagens/dashboard_demo.png" alt="PCB Sistema Transmissor" />
 </p>
