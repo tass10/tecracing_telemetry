@@ -1,0 +1,31 @@
+#V2
+#DEVICE TELEMETRIA_PC
+#MAPFILE PROTOTIPO_TR07_MAY_26
+#ECUCODE TELEMETRIA.PYTHON.V1
+#SERIALNUMBER LORA_202605101955
+#LOADDATE 10/05/2026 (19:55:21)
+#STARTCHINFO
+Tempo_desde_que_a_ECU_foi_ligada .001 0 0 3
+Rotacao_do_Motor 1 0 0 3
+Pressao_de_Admissao_(MAP) .1 0 1 2
+Temperatura_do_Ar_da_Admissao_(IAT) .1 0 1 2
+Temperatura_do_Motor_(ET) .1 0 1 2
+Posicao_da_Borboleta_(TP/TP1L) .1 0 1 2
+Tensao_da_Bateria .1 0 1 2
+Lambda_1_-_Valor .001 0 2 2
+Pressao_de_Oleo_(OP) .01 0 2 2
+Fuel_-_Pressao_de_Combustivel .01 0 2 2
+GPS_Velocidade .1 0 1 3
+RSSI_Sinal_LoRa 1 0 0 1
+ADC_A0 .1 0 0 2
+ADC_A1 .1 0 0 2
+ADC_A3 .1 0 0 2
+#ENDCHINFO
+#NUMBEROFSHOWS 0
+#TRACKLABEL Desconhecido
+#MAXSPEED 0
+#BESTLAP 00:00.000 (0)
+#NUMBEROFLAPS 0
+#DATASTART
+Datalog Time ; Tempo desde que a ECU foi ligada;Rotacao do Motor;Pressao de Admissao (MAP);Temperatura do Ar da Admissao (IAT);Temperatura do Motor (ET);Posicao da Borboleta (TP/TP1L);Tensao da Bateria;Lambda 1 - Valor;Pressao de Oleo (OP);Fuel - Pressao de Combustivel;GPS Velocidade;RSSI Sinal LoRa;ADC A0;ADC A1;ADC A3;
+s ; Seg;1/min;kPa;°C;°C;%;V;Lambda;bar;bar;km/h;dBm;°C;°C;Psi;

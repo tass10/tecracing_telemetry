@@ -2,6 +2,8 @@ import sys
 import serial
 import serial.tools.list_ports  # <-- NOVO: Para buscar as portas COM disponíveis automaticamente
 import time
+from datetime import datetime
+import os
 import struct # <-- IMPORTANTE: Módulo para lidar com dados binários em C/C++
 from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QLabel, QProgressBar, QComboBox, QToolBar # <-- NOVO: QComboBox e QToolBar
 from PyQt5.QtCore import QThread, pyqtSignal, pyqtSlot
@@ -13,7 +15,7 @@ import random
 # =======================================================
 # '<'   = Little-endian (padrão do ESP32)
 # '2B'  = 2 unsigned char (Header 0xAA, 0x55)
-# '8h'  = 8 short int (Nano vars)
+# '8h'  = 8 short int (ADCs vars)
 # 'H'   = 1 unsigned short (ecu_uptime)
 # '21h' = 21 short int (CAN vars)
 # 'H'   = 1 unsigned short (gps_date)
@@ -116,15 +118,15 @@ class SerialWorker(QThread):
                                     try:
                                         dados = struct.unpack(STRUCT_FORMAT, pacote_completo)
                                         
-                                        # -- VARIÁVEIS DO NANO --
-                                        nano_a0 = dados[2]
-                                        nano_a1 = dados[3]
-                                        nano_a2 = dados[4]
-                                        nano_a3 = dados[5]
-                                        nano_a4 = dados[6]
-                                        nano_a5 = dados[7]
-                                        nano_a6 = dados[8]
-                                        nano_a7 = dados[9]
+                                        # -- VARIÁVEIS DOS ADCs --
+                                        adc_a0 = dados[2]
+                                        adc_a1 = dados[3]
+                                        adc_a2 = dados[4]
+                                        adc_a3 = dados[5]
+                                        adc_a4 = dados[6]
+                                        adc_a5 = dados[7]
+                                        adc_a6 = dados[8]
+                                        adc_a7 = dados[9]
 
                                         # -- VARIÁVEIS DO CAN --
                                         # Lembre-se: Aqui nós aplicamos a divisão que tiramos do ESP32!
@@ -162,11 +164,10 @@ class SerialWorker(QThread):
                                         rssi_dbm = rssi_raw - 256
 
                                         print(dados)
-                                        #print(nano_a1*0.00028350)
+                                        #print(adc_a1*0.00028350)
                                         # Emite para a interface gráfica 
-                                        # (Atualmente usando as variáveis do Nano, mas você pode alterar para emitir o engine_speed do CAN, por exemplo)
-                                        self.data_received.emit(int(nano_a0), int(nano_a1), int(nano_a2), int(nano_a3), int(nano_a4), int(nano_a5), int(nano_a6), 
-                                                                int(nano_a7), int(ecu_uptime), int(engine_speed), float(map_press), float(iat), float(clt),
+                                        self.data_received.emit(int(adc_a0), int(adc_a1), int(adc_a2), int(adc_a3), int(adc_a4), int(adc_a5), int(adc_a6), 
+                                                                int(adc_a7), int(ecu_uptime), int(engine_speed), float(map_press), float(iat), float(clt),
                                                                 float(tps), float(lambda1), float(oil_press), float(fuel_press), float(aux1_v), float(aux2_v),
                                                                 float(aux3_v), float(aux4_v), float(aux5_v), float(aux6_v), float(aux7_v), float(aux8_v),
                                                                 float(aux9_v), float(aux_out3_perc), float(aux_out6_perc), int(launch_control), float(battery_v),
@@ -199,6 +200,9 @@ class Dashboard(QMainWindow):
         super().__init__()
         
         uic.loadUi("python/telemetry/dashboard.ui", self)
+
+        self.logger = ProTuneLogger()
+        self.logger.start_new_log()
 
         self.gauge1.setRange(0, 12000)
         self.gauge1.setUnits("RPM")
@@ -304,8 +308,8 @@ class Dashboard(QMainWindow):
                 float, float, float, float, float, float, float, 
                 float, float, float, float, int, float, int, int, 
                 int, float, int, int)
-    def update_gauges(self, nano_a0, nano_a1, nano_a2, nano_a3, nano_a4, nano_a5, nano_a6, 
-                            nano_a7, ecu_uptime, engine_speed, map_press, iat, clt,
+    def update_gauges(self, adc_a0, adc_a1, adc_a2, adc_a3, adc_a4, adc_a5, adc_a6, 
+                            adc_a7, ecu_uptime, engine_speed, map_press, iat, clt,
                             tps, lambda1, oil_press, fuel_press, aux1_v, aux2_v,
                             aux3_v, aux4_v, aux5_v, aux6_v, aux7_v, aux8_v,
                             aux9_v, aux_out3_perc, aux_out6_perc, launch_control, battery_v,
@@ -320,11 +324,7 @@ class Dashboard(QMainWindow):
         self.lbl_gauge_8.setText("RADIATOR IN TEMP")
         self.lbl_gauge_14.setText("RADIATOR OUT TEMP")
         
-        """ # Limpa as labels não utilizadas
-        for i in range(9, 19):
-            getattr(self, f"lbl_gauge_{i}").setText("") """
-
-        self.gauge1.setValue(nano_a0) # TEMPORáRIO
+        self.gauge1.setValue(adc_a0) # TEMPORáRIO
         self.gauge2.setValue(clt)   # Corrigido para mostrar a velocidade real que chegou na função
         self.gauge3.setValue(tps)  # Corrigido para mostrar a temp real que chegou na função
         self.gauge4.setValue(lambda1)
@@ -333,9 +333,145 @@ class Dashboard(QMainWindow):
         self.gauge5.setDecimals(1)
         self.gauge7.setValue(rssi_dbm) # NOVO: Atualiza o gauge do sinal
 
+        # Perto da linha onde você dá o self.gauge1.setValue(...)
+        dados_atuais = {
+            'ecu_uptime': ecu_uptime,
+            'engine_speed': engine_speed,
+            'map_press': map_press,
+            'iat': iat,
+            'clt': clt,
+            'tps': tps,
+            'battery_v': battery_v,
+            'lambda1': lambda1,
+            'oil_press': oil_press,
+            'fuel_press': fuel_press,
+            'gps_speed': gps_speed,
+            'rssi_dbm': rssi_dbm,
+            'adc_a0': adc_a0,
+            'adc_a1': adc_a1,
+            'adc_a3': adc_a3 
+        }
+        self.logger.log_data(dados_atuais)
+
     def closeEvent(self, event):
+        self.logger.stop_log() # Fecha o arquivo com segurança
         self.serial_thread.stop()
         event.accept()
+
+class ProTuneLogger:
+    def __init__(self, folder_path="datalog_telemetria"):
+        self.folder_path = folder_path
+        if not os.path.exists(self.folder_path):
+            os.makedirs(self.folder_path)
+            
+        self.file = None
+        self.start_time = None
+        
+        # Mapeamento EXATO da ordem das variáveis que o seu dashboard recebe
+        # e como elas devem se chamar no cabeçalho da ProTune
+        self.channel_info = [
+            ("Tempo_desde_que_a_ECU_foi_ligada", ".001", "0", "0", "3", "Seg"),
+            ("Rotacao_do_Motor", "1", "0", "0", "3", "1/min"),
+            ("Pressao_de_Admissao_(MAP)", ".1", "0", "1", "2", "kPa"),
+            ("Temperatura_do_Ar_da_Admissao_(IAT)", ".1", "0", "1", "2", "°C"),
+            ("Temperatura_do_Motor_(ET)", ".1", "0", "1", "2", "°C"),
+            ("Posicao_da_Borboleta_(TP/TP1L)", ".1", "0", "1", "2", "%"),
+            ("Tensao_da_Bateria", ".1", "0", "1", "2", "V"),
+            ("Lambda_1_-_Valor", ".001", "0", "2", "2", "Lambda"),
+            ("Pressao_de_Oleo_(OP)", ".01", "0", "2", "2", "bar"),
+            ("Fuel_-_Pressao_de_Combustivel", ".01", "0", "2", "2", "bar"),
+            ("GPS_Velocidade", ".1", "0", "1", "3", "km/h"),
+            ("RSSI_Sinal_LoRa", "1", "0", "0", "1", "dBm"),
+            ("ADC_A0", ".1", "0", "0", "2", "°C"),
+            ("ADC_A1", ".1", "0", "0", "2", "°C"),
+            ("ADC_A3", ".1", "0", "0", "2", "Psi")
+        ]
+
+    def start_new_log(self):
+        """Cria o arquivo e grava o cabeçalho compatível com ProTune/Racepak"""
+        now = datetime.now()
+        filename = f"TELEMETRIA_TR07_{now.strftime('%Y%m%d_%H%M%S')}.dlf"
+        filepath = os.path.join(self.folder_path, filename)
+        
+        self.file = open(filepath, 'w', encoding='utf-8')
+        self.start_time = time.time()
+        
+        # 1. ESCRITA DO CABEÇALHO GLOBAL
+        self.file.write("#V2\n")
+        self.file.write("#DEVICE TELEMETRIA_PC\n")
+        self.file.write(f"#MAPFILE PROTOTIPO_TR07_{now.strftime('%b_%y').upper()}\n")
+        self.file.write("#ECUCODE TELEMETRIA.PYTHON.V1\n")
+        self.file.write(f"#SERIALNUMBER LORA_{now.strftime('%Y%m%d%H%M')}\n")
+        self.file.write(f"#LOADDATE {now.strftime('%d/%m/%Y (%H:%M:%S)')}\n")
+        
+        # 2. ESCRITA DOS CANAIS (As variáveis)
+        self.file.write("#STARTCHINFO\n")
+        for ch in self.channel_info:
+            nome, res, unk1, unk2, dec = ch[:5]
+            self.file.write(f"{nome} {res} {unk1} {unk2} {dec}\n")
+        self.file.write("#ENDCHINFO\n")
+        
+        self.file.write("#NUMBEROFSHOWS 0\n") # O software ignora isso na leitura
+        self.file.write("#TRACKLABEL Desconhecido\n")
+        self.file.write("#MAXSPEED 0\n")
+        self.file.write("#BESTLAP 00:00.000 (0)\n")
+        self.file.write("#NUMBEROFLAPS 0\n")
+        
+        # 3. ESCRITA DOS TÍTULOS E UNIDADES DAS COLUNAS (Para leitura em Excel/CSV)
+        self.file.write("#DATASTART\n")
+        
+        titulos = "Datalog Time ; " + ";".join([ch[0].replace("_-_", " - ").replace("_", " ") for ch in self.channel_info]) + ";\n"
+        unidades = "s ; " + ";".join([ch[5] for ch in self.channel_info]) + ";\n"
+        
+        self.file.write(titulos)
+        self.file.write(unidades)
+
+    def log_data(self, data_dict):
+        """
+        Recebe um dicionário com os valores atuais e grava uma linha no log.
+        Formato "Burro" mas compatível: Força o caracter 'A' entre todos os valores.
+        """
+        if self.file is None or self.file.closed:
+            return
+            
+        current_time = time.time() - self.start_time
+        
+        # Inicia a linha com o Tempo exato (com 3 casas decimais)
+        line = f" {current_time:.3f}".replace('.', ',')
+        
+        # Extrai os dados na ORDEM EXATA do cabeçalho
+        # Importante formatar com as casas decimais corretas para o arquivo
+        valores = [
+            f"{data_dict.get('ecu_uptime', 0):.0f}",
+            f"{data_dict.get('engine_speed', 0):.0f}",
+            f"{data_dict.get('map_press', 0):.1f}",
+            f"{data_dict.get('iat', 0):.1f}",
+            f"{data_dict.get('clt', 0):.1f}",
+            f"{data_dict.get('tps', 0):.1f}",
+            f"{data_dict.get('battery_v', 0):.1f}",
+            f"{data_dict.get('lambda1', 0):.3f}",
+            f"{data_dict.get('oil_press', 0):.2f}",
+            f"{data_dict.get('fuel_press', 0):.2f}",
+            f"{data_dict.get('gps_speed', 0):.1f}",
+            f"{data_dict.get('rssi_dbm', 0):.0f}",
+            f"{data_dict.get('adc_a0', 0):.1f}",
+            f"{data_dict.get('adc_a1', 0):.1f}",
+            f"{data_dict.get('adc_a3', 0):.1f}"
+        ]
+        
+        # Constrói a linha usando 'A' como separador 
+        # (O 'A' significa: "A próxima variável da tabela foi alterada para o valor a seguir")
+        for val in valores:
+            line += "A" + str(val).replace('.', ',')
+            
+        line += "A\n" # A ProTune geralmente termina a linha com o último separador
+        
+        self.file.write(line)
+        self.file.flush() # Força a gravação no HD imediatamente para não perder dados se o PC travar
+
+    def stop_log(self):
+        if self.file and not self.file.closed:
+            self.file.close()
 
 # =======================================================
 # 3. EXECUÇÃO DO APLICATIVO
