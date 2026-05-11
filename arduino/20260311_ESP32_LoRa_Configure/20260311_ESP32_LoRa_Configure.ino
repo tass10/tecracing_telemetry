@@ -51,11 +51,9 @@ Para enableRepeater, enableLBT, enableRSSI e RSSIAmbientNoise:
 
 1 = Enable (Ativado) */
 
-
-
 #include <Arduino.h>
 
-// 1. OBRIGATÓRIO: Definir a versão de 30dBm ANTES de incluir a biblioteca
+// 1. efinir a versão de 30dBm antes de incluir a biblioteca
 #define E22_30 
 #include "LoRa_E22.h"
 
@@ -66,7 +64,7 @@ Para enableRepeater, enableLBT, enableRSSI e RSSIAmbientNoise:
 // Definição dos pinos de controle do E22
 #define PIN_M0 32
 #define PIN_M1 33
-#define PIN_AUX 35 // O pino AUX é essencial. Altere conforme a sua montagem.
+#define PIN_AUX 35
 
 HardwareSerial mySerial(2);
 
@@ -79,7 +77,7 @@ void setup() {
   
   Serial.println("Iniciando configuracao do E22-400T30D...");
 
-  // Inicia a comunicação com o LoRa no Baud Rate atual dele (padrão de fábrica é 9600)
+  // Inicia a comunicação com o LoRa no Baud Rate atual dele
   mySerial.begin(9600, SERIAL_8N1, RX2_PIN, TX2_PIN);
 
   e22.begin();
@@ -98,7 +96,7 @@ void setup() {
   // ---------------------------------------------------------
   // AJUSTANDO OS PARÂMETROS DO LORA
   // ---------------------------------------------------------
-// 1. Endereço e Network ID
+  // 1. Endereço e Network ID
   configuration.ADDH = 0;           // Byte alto do endereço (0)
   configuration.ADDL = 88;          // Byte baixo do endereço (88)
   configuration.NETID = 0;          // ID da rede (0)
@@ -141,5 +139,4 @@ void setup() {
 }
 
 void loop() {
-  // Nada no loop para o script de configuração
 }
