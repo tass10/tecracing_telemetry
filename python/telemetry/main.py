@@ -32,7 +32,6 @@ PACKET_SIZE = struct.calcsize(STRUCT_FORMAT) # Deve resultar em exatos 73 bytes
 # 1. THREAD DE AQUISIÇÃO DE DADOS (Background)
 # =======================================================
 class SerialWorker(QThread):
-    # Por enquanto mantendo 3 floats no signal, mas você pode expandir depois!
     data_received = pyqtSignal(int, int, int, int, int, int, int, int, int, int, 
                                float, float, float, float, float, float, float, 
                                float, float, float, float, float, float, float, 
@@ -131,7 +130,6 @@ class SerialWorker(QThread):
                                         adc_a7 = dados[9]
 
                                         # -- VARIÁVEIS DO CAN --
-                                        # Lembre-se: Aqui nós aplicamos a divisão que tiramos do ESP32!
                                         ecu_uptime = dados[10]
                                         engine_speed = dados[11] # RPM real da injeção
                                         map_press = dados[12] / 10.0
@@ -159,14 +157,11 @@ class SerialWorker(QThread):
                                         gps_lon = dados[34]
                                         gps_speed = dados[35] / 10.0
                                         gps_time_utc = dados[36]
-                                        # -- MÉTRICAS LORA (NOVO) --
-                                        # O índice 37 é o Checksum, o 38 é o RSSI
                                         rssi_raw = dados[38]
-                                        # Fórmula padrão EByte para converter o byte cru em dBm
-                                        rssi_dbm = rssi_raw - 256
+                                        rssi_dbm = rssi_raw - 256   # Fórmula padrão EByte para converter o byte cru em dBm
 
                                         print(dados)
-                                        #print(adc_a1*0.00028350)
+
                                         # Emite para a interface gráfica 
                                         self.data_received.emit(int(adc_a0), int(adc_a1), int(adc_a2), int(adc_a3), int(adc_a4), int(adc_a5), int(adc_a6), 
                                                                 int(adc_a7), int(ecu_uptime), int(engine_speed), float(map_press), float(iat), float(clt),
@@ -234,11 +229,10 @@ class Dashboard(QMainWindow):
         self.gauge6.setScaleSteps(6) 
         self.gauge6.setCriticalThreshold(100)
 
-        # --- NOVO: Configurando Gauge 7 para o RSSI ---
-        self.gauge7.setRange(-150, 0) # Sinal varia tipicamente de -120 a -30
+        self.gauge7.setRange(-150, 0)
         self.gauge7.setUnits("dBm")
         self.gauge7.setScaleSteps(5)
-        self.gauge7.setCriticalThreshold(-110) # Fica vermelho se o sinal estiver muito fraco
+        self.gauge7.setCriticalThreshold(-110)
 
         self.gauge8.setRange(0, 120)
         self.gauge8.setUnits("°C")
@@ -250,17 +244,17 @@ class Dashboard(QMainWindow):
         self.gauge14.setScaleSteps(6) 
         self.gauge14.setCriticalThreshold(100)
 
-        # --- NOVO: Configura a barra de ferramentas com o Drop-down ---
+        # Configura a barra de ferramentas com o Drop-down
         self.setup_com_toolbar()
 
         # Inicia o SerialWorker com a porta selecionada no drop-down
-        porta_inicial = 'COM11'#self.combo_ports.currentText() if self.combo_ports.count() > 0 else 'COM11'
+        porta_inicial = 'COM11'
         self.serial_thread = SerialWorker(port=porta_inicial, baudrate=115200, simulation_mode=False)
         self.serial_thread.data_received.connect(self.update_gauges)
         self.serial_thread.start()
 
     # =======================================================
-    # NOVO: Funções para lidar com o seletor de Porta COM
+    # Funções para lidar com o seletor de Porta COM
     # =======================================================
     def setup_com_toolbar(self):
         """Cria uma barra no topo da janela para selecionar a porta."""
@@ -278,8 +272,8 @@ class Dashboard(QMainWindow):
         self.combo_ports.currentTextChanged.connect(self.on_com_port_changed)
 
     def refresh_com_ports(self):
-        """Busca as portas ativas no PC e adiciona ao ComboBox."""
-        self.combo_ports.blockSignals(True) # Evita disparar a mudança enquanto preenchemos
+        # Busca as portas ativas no PC e adiciona ao ComboBox
+        self.combo_ports.blockSignals(True) # Evita disparar a mudança enquanto se preenche
         self.combo_ports.clear()
         
         ports = serial.tools.list_ports.comports()
@@ -289,17 +283,17 @@ class Dashboard(QMainWindow):
         self.combo_ports.blockSignals(False)
 
     def on_com_port_changed(self, new_port):
-        """Reinicia a thread serial com a nova porta."""
+        # Reinicia a thread serial com a nova porta
         if not new_port:
             return
 
         print(f"Mudança detectada! Trocando para {new_port}...")
         
-        # 1. Para a thread atual com segurança
+        # Para a thread atual com segurança
         if hasattr(self, 'serial_thread') and self.serial_thread.isRunning():
             self.serial_thread.stop()
 
-        # 2. Cria e inicia uma nova thread com a porta atualizada
+        # Cria e inicia uma nova thread com a porta atualizada
         self.serial_thread = SerialWorker(port=new_port, baudrate=115200, simulation_mode=False)
         self.serial_thread.data_received.connect(self.update_gauges)
         self.serial_thread.start()
@@ -322,20 +316,20 @@ class Dashboard(QMainWindow):
         self.lbl_gauge_4.setText("LAMBDA")
         self.lbl_gauge_5.setText("BATTERY VOLTAGE")
         self.lbl_gauge_6.setText("GPS VELOCITY")
-        self.lbl_gauge_7.setText("RSSI (SINAL)") # NOVO
+        self.lbl_gauge_7.setText("RSSI (SINAL)")
         self.lbl_gauge_8.setText("RADIATOR IN TEMP")
         self.lbl_gauge_14.setText("RADIATOR OUT TEMP")
         
-        self.gauge1.setValue(adc_a0) # TEMPORáRIO
-        self.gauge2.setValue(clt)   # Corrigido para mostrar a velocidade real que chegou na função
-        self.gauge3.setValue(tps)  # Corrigido para mostrar a temp real que chegou na função
+        self.gauge1.setValue(engine_speed)
+        self.gauge2.setValue(clt)
+        self.gauge3.setValue(tps)
         self.gauge4.setValue(lambda1)
         self.gauge4.setDecimals(3)
         self.gauge5.setValue(battery_v)
         self.gauge5.setDecimals(1)
-        self.gauge7.setValue(rssi_dbm) # NOVO: Atualiza o gauge do sinal
+        self.gauge7.setValue(rssi_dbm) 
 
-        # Perto da linha onde você dá o self.gauge1.setValue(...)
+        # Dataloggig
         dados_atuais = {
             'ecu_uptime': ecu_uptime,
             'engine_speed': engine_speed,
@@ -360,6 +354,10 @@ class Dashboard(QMainWindow):
         self.serial_thread.stop()
         event.accept()
 
+# =======================================================
+# 3. ARMAZENAMENTO LOCAL DOS DADOS RECEBIDOS
+# =======================================================
+
 class ProTuneLogger:
     def __init__(self, folder_path="datalog_telemetria"):
         self.folder_path = folder_path
@@ -369,8 +367,6 @@ class ProTuneLogger:
         self.file = None
         self.start_time = None
         
-        # Mapeamento EXATO da ordem das variáveis que o seu dashboard recebe
-        # e como elas devem se chamar no cabeçalho da ProTune
         self.channel_info = [
             ("Tempo_desde_que_a_ECU_foi_ligada", ".001", "0", "0", "3", "Seg"),
             ("Rotacao_do_Motor", "1", "0", "0", "3", "1/min"),
@@ -390,7 +386,7 @@ class ProTuneLogger:
         ]
 
     def start_new_log(self):
-        """Cria o arquivo e grava o cabeçalho compatível com ProTune/Racepak"""
+        # Cria o arquivo e grava o cabeçalho compatível com ProTune
         now = datetime.now()
         filename = f"TELEMETRIA_TR07_{now.strftime('%Y%m%d_%H%M%S')}.dlf"
         filepath = os.path.join(self.folder_path, filename)
@@ -398,7 +394,7 @@ class ProTuneLogger:
         self.file = open(filepath, 'w', encoding='utf-8')
         self.start_time = time.time()
         
-        # 1. ESCRITA DO CABEÇALHO GLOBAL
+        # ESCRITA DO CABEÇALHO GLOBAL
         self.file.write("#V2\n")
         self.file.write("#DEVICE TELEMETRIA_PC\n")
         self.file.write(f"#MAPFILE PROTOTIPO_TR07_{now.strftime('%b_%y').upper()}\n")
@@ -406,20 +402,20 @@ class ProTuneLogger:
         self.file.write(f"#SERIALNUMBER LORA_{now.strftime('%Y%m%d%H%M')}\n")
         self.file.write(f"#LOADDATE {now.strftime('%d/%m/%Y (%H:%M:%S)')}\n")
         
-        # 2. ESCRITA DOS CANAIS (As variáveis)
+        # ESCRITA DOS CANAIS (As variáveis)
         self.file.write("#STARTCHINFO\n")
         for ch in self.channel_info:
             nome, res, unk1, unk2, dec = ch[:5]
             self.file.write(f"{nome} {res} {unk1} {unk2} {dec}\n")
         self.file.write("#ENDCHINFO\n")
         
-        self.file.write("#NUMBEROFSHOWS 0\n") # O software ignora isso na leitura
+        self.file.write("#NUMBEROFSHOWS 0\n")
         self.file.write("#TRACKLABEL Desconhecido\n")
         self.file.write("#MAXSPEED 0\n")
         self.file.write("#BESTLAP 00:00.000 (0)\n")
         self.file.write("#NUMBEROFLAPS 0\n")
         
-        # 3. ESCRITA DOS TÍTULOS E UNIDADES DAS COLUNAS (Para leitura em Excel/CSV)
+        # ESCRITA DOS TÍTULOS E UNIDADES DAS COLUNAS (Para leitura em Excel/CSV)
         self.file.write("#DATASTART\n")
         
         titulos = "Datalog Time ; " + ";".join([ch[0].replace("_-_", " - ").replace("_", " ") for ch in self.channel_info]) + ";\n"
@@ -429,10 +425,8 @@ class ProTuneLogger:
         self.file.write(unidades)
 
     def log_data(self, data_dict):
-        """
-        Recebe um dicionário com os valores atuais e grava uma linha no log.
-        Formato "Burro" mas compatível: Força o caracter 'A' entre todos os valores.
-        """
+        # Recebe um dicionário com os valores atuais e grava uma linha no log. Formato compatível: Força o caracter 'A' entre todos os valores.
+        
         if self.file is None or self.file.closed:
             return
             
@@ -441,8 +435,7 @@ class ProTuneLogger:
         # Inicia a linha com o Tempo exato (com 3 casas decimais)
         line = f" {current_time:.3f}".replace('.', ',')
         
-        # Extrai os dados na ORDEM EXATA do cabeçalho
-        # Importante formatar com as casas decimais corretas para o arquivo
+        # Extrai os dados na ordem exata do cabeçalho
         valores = [
             f"{data_dict.get('ecu_uptime', 0):.0f}",
             f"{data_dict.get('engine_speed', 0):.0f}",
@@ -462,7 +455,6 @@ class ProTuneLogger:
         ]
         
         # Constrói a linha usando 'A' como separador 
-        # (O 'A' significa: "A próxima variável da tabela foi alterada para o valor a seguir")
         for val in valores:
             line += "A" + str(val).replace('.', ',')
             
@@ -476,7 +468,7 @@ class ProTuneLogger:
             self.file.close()
 
 # =======================================================
-# 3. EXECUÇÃO DO APLICATIVO
+# 4. EXECUÇÃO DO APLICATIVO
 # =======================================================
 if __name__ == '__main__':
     app = QApplication(sys.argv)

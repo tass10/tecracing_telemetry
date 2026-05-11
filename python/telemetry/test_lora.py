@@ -18,7 +18,7 @@ STRUCT_FORMAT = '< 2B 8h H 21h H 3h H B B'
 PACKET_SIZE = struct.calcsize(STRUCT_FORMAT)
 
 # =======================================================
-# 1. THREAD DE AQUISIÇÃO DE DADOS (Background)
+# THREAD DE AQUISIÇÃO DE DADOS (Background)
 # =======================================================
 class SerialWorker(QThread):
     data_received = pyqtSignal(int, int, int, int, int, int, int, int, int, int, 
@@ -27,7 +27,6 @@ class SerialWorker(QThread):
                                float, float, float, float, int, float, int, int, 
                                int, float, int, int)
     
-    # --- ATUALIZADO: Sinal emitido quando o teste acaba (agora com +3 floats para a frequência) ---
     test_completed = pyqtSignal(int, float, float, int, int, str, float, float, float)
 
     def __init__(self, port='COM11', baudrate=115200, simulation_mode=False):
@@ -39,7 +38,7 @@ class SerialWorker(QThread):
         
         # --- Variáveis de controle do teste ---
         self.rssi_history = []
-        self.freq_history = [] # NOVO: Armazena as frequências calculadas
+        self.freq_history = [] # Armazena as frequências calculadas
         self.last_packet_time = 0
         self.receiving_data = False
         self.log_filename = ""
@@ -93,7 +92,7 @@ class SerialWorker(QThread):
                             else:
                                 avg_rssi = max_rssi = min_rssi = 0
                                 
-                            # NOVO: Estatísticas de Frequência (Hz)
+                            # Estatísticas de Frequência (Hz)
                             if len(self.freq_history) > 0:
                                 avg_freq = sum(self.freq_history) / len(self.freq_history)
                                 max_freq = max(self.freq_history)
@@ -177,7 +176,7 @@ class SerialWorker(QThread):
                                             self.log_filename = f"telemetria_{int(current_time)}.csv"
                                             print(f"Iniciando novo teste. Salvando em: {self.log_filename}")
                                         else:
-                                            # NOVO: Calcula a frequência em Hz (mensagens por segundo)
+                                            # Calcula a frequência em Hz (mensagens por segundo)
                                             delta_t = current_time - self.last_packet_time
                                             # Previne divisão por zero caso cheguem muito rápido para o clock do Python
                                             if delta_t > 0.001: 
@@ -319,7 +318,7 @@ class Dashboard(QMainWindow):
         self.serial_thread.test_completed.connect(self.show_test_report) 
         self.serial_thread.start()
 
-    # --- ATUALIZADO: Função que exibe a caixa de diálogo com as novas métricas de frequência ---
+    # Função que exibe a caixa de diálogo com as novas métricas de frequência 
     @pyqtSlot(int, float, float, int, int, str, float, float, float)
     def show_test_report(self, total, erro_perc, avg_rssi, max_rssi, min_rssi, filename, avg_freq, max_freq, min_freq):
         msg = QMessageBox()

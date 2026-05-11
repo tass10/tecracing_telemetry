@@ -3,7 +3,7 @@
 from PyQt5.QtWidgets import QWidget
 from PyQt5.QtGui import QPainter, QPen, QColor, QFont
 from PyQt5.QtCore import Qt, QRectF
-import math # <-- OBRIGATÓRIO PARA A TRIGONOMETRIA
+import math
 
 class AnalogGauge(QWidget):
     def __init__(self, parent=None):
@@ -18,7 +18,6 @@ class AnalogGauge(QWidget):
         self.normal_color = QColor(0, 150, 255) 
         self.critical_color = QColor(255, 50, 50) 
         
-        # --- NOVA VARIÁVEL: Quantidade de intervalos na escala ---
         self.scale_steps = 5 
         
         self.setMinimumSize(200, 200)
@@ -49,9 +48,8 @@ class AnalogGauge(QWidget):
         self.critical_color = QColor(critical_hex)
         self.update()
 
-    # --- NOVO MÉTODO: Define quantos números intermediários desenhar ---
+    # Define quantos números intermediários desenhar
     def setScaleSteps(self, steps):
-        """Ex: 5 passos cria 6 números (0, 20, 40, 60, 80, 100)"""
         self.scale_steps = steps
         self.update()
 
@@ -91,7 +89,7 @@ class AnalogGauge(QWidget):
         painter.setPen(pen_fill)
         painter.drawArc(arc_rect, start_angle * 16, int(current_span * 16))
 
-        # --- 3. NOVA LÓGICA: DESENHA OS NÚMEROS DA ESCALA ---
+        # --- DESENHA OS NÚMEROS DA ESCALA ---
         font_scale = QFont("Arial", 8, QFont.Bold)
         painter.setFont(font_scale)
         painter.setPen(QColor(200, 200, 200)) # Cinza claro
@@ -134,7 +132,5 @@ class AnalogGauge(QWidget):
         font_unit = QFont("Arial", 13, QFont.Bold)
         painter.setFont(font_unit)
         painter.drawText(QRectF(-size/2, size/5, size, size/3), Qt.AlignCenter, self.units)
-
-        
 
         painter.end()

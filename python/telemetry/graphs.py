@@ -1,3 +1,5 @@
+# Código para gerar o gráfico de desempenho da comunicação a distância
+
 import matplotlib.pyplot as plt
 
 # ==========================================================
@@ -6,14 +8,14 @@ plt.rcParams['font.family'] = 'Arial'  # Ou 'Times New Roman'
 plt.rcParams['font.size'] = 11         # Tamanho base para os números dos eixos
 # ==========================================================
 
-# 1. COLOQUE AQUI OS SEUS DADOS REAIS
+# DADOS
 distancias = [50, 100, 150, 200, 250]
 erro_pct = [0.0, 0.0, 0.0, 0.0, 0.9] 
 rssi_avg = [-46.4,  -33.7,  -38.5,  -38,    -56.7]
 rssi_min = [-53,    -37,    -42,    -40,    -77]
 rssi_max = [-42,    -32,    -36,    -36,    -51]
 
-# 2. CRIAÇÃO DO GRÁFICO
+# CRIAÇÃO DO GRÁFICO
 fig, ax1 = plt.subplots(figsize=(10, 5))
 
 # Configuração do Eixo Esquerdo (Sinal RSSI)

@@ -1,3 +1,5 @@
+# Código para converter o arquivo .log binário do cartão SD em um arquivo .dlf para o ProTune Analyzer
+
 import struct
 import os
 import time
@@ -10,8 +12,7 @@ ARQUIVO_ENTRADA = "telemetry.log"
 FORMATO_BINARIO = '< 2B 8h H 21h H 3h H B'
 TAMANHO_PACOTE = struct.calcsize(FORMATO_BINARIO) # 73 bytes
 
-# O ESP32 estava programado para 200ms (5Hz), usaremos isso para avançar o tempo do Datalog
-INTERVALO_SEGUNDOS = 0.200 
+INTERVALO_SEGUNDOS = 0.100 
 
 # ==========================================
 # MAPEAMENTO DO CABEÇALHO PROTUNE
@@ -121,7 +122,6 @@ def converter_arquivo():
                 lambda1 = dados[16] / 1000.0
                 oil_press = dados[17] / 100.0
                 fuel_press = dados[18] / 100.0
-                # Pulando alguns aux para focar no mapeamento principal pedido
                 battery_v = dados[31] / 10.0
                 gps_speed = dados[35] / 10.0
 
@@ -156,7 +156,7 @@ def converter_arquivo():
                 
                 f_out.write(linha_protune)
                 
-                # Avança o tempo do Datalog (200ms por ciclo)
+                # Avança o tempo do Datalog
                 tempo_atual_datalog += INTERVALO_SEGUNDOS
 
         print("\n--- CONVERSÃO CONCLUÍDA ---")

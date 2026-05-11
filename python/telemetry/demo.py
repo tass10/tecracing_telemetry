@@ -1,3 +1,5 @@
+# Código utilizado para demonstração do dashboard com todas as variáveis se alterando
+
 import sys
 import serial
 import serial.tools.list_ports
@@ -79,10 +81,9 @@ class SerialWorker(QThread):
                     time.sleep(1)
             
             # ---------------------------------------------------
-            # MODO REAL (Mantido intacto)
+            # MODO REAL
             # ---------------------------------------------------
             else:
-                # ... (Seu código original de conexão serial continua aqui sem alterações)
                 pass 
 
     def stop(self):
