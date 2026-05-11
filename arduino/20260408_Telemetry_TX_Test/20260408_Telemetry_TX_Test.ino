@@ -1,3 +1,5 @@
+// Código utilizado no  ESP32 do Sistema Transmissor durante o teste de comunicação enviando 1.000 mensagens
+
 #include <SPI.h>
 #include <FS.h>
 #include <SD.h>
@@ -83,6 +85,9 @@ const int PIN_SCL = 4;
 #define PIN_M0 32
 #define PIN_M1 33
 
+const int amostras = 1000;
+int i=0;
+
 // ==========================================
 // INSTÂNCIAS SPI, CAN E I2C
 // ==========================================
@@ -121,7 +126,7 @@ volatile uint16_t gps_time_utc = 0;
 // CONTROLE DE TEMPO DA TELEMETRIA
 // ==========================================
 unsigned long tempo_ultima_leitura = 0;
-const unsigned long intervalo_telemetria = 200; 
+const unsigned long intervalo_telemetria = 100; 
 
 TaskHandle_t TaskCAN_Handle;
 
@@ -234,7 +239,7 @@ void setup() {
   ads1.setDataRate(RATE_ADS1115_860SPS);
   ads2.setDataRate(RATE_ADS1115_860SPS);
 
-  Serial.print("Inicializando ADS1115... ");
+  //Serial.print("Inicializando ADS1115... ");
   // Passa o &Wire para garantir que a biblioteca use os pinos 22 e 4
   if (!ads1.begin(0x48, &Wire)) { 
     Serial.println("Falha no ADS 1 (0x48)!");
@@ -248,7 +253,7 @@ void setup() {
   // ========================================================
   // INICIALIZAÇÃO CAN E SD
   // ========================================================
-  Serial.print("Inicializando MCP2515 no HSPI... ");
+  //Serial.print("Inicializando MCP2515 no HSPI... ");
   mcp2515.reset();
   if (mcp2515.setBitrate(CAN_500KBPS, MCP_8MHZ) != MCP2515::ERROR_OK) {
     Serial.println("ERRO de Bitrate no CAN!");
@@ -259,7 +264,7 @@ void setup() {
     Serial.println("FALHA no MCP2515!");
   }
 
-  Serial.print("Inicializando SD Card no VSPI... ");
+  //Serial.print("Inicializando SD Card no VSPI... ");
   if (!SD.begin(pino_cs_sd, SPI, 4000000)) {
     Serial.println("FALHA no SD Card!");
   } else {
@@ -277,85 +282,72 @@ void setup() {
 // ==========================================
 // LOOP PRINCIPAL (RODA NO NÚCLEO 1)
 // ==========================================
+// ==========================================
+// LOOP PRINCIPAL (RODA NO NÚCLEO 1)
+// ==========================================
 void loop() {
+  // Substituímos o while() por um if() simples
+  if (i < amostras) {
+    
+    if (millis() - tempo_ultima_leitura >= intervalo_telemetria) {
+      tempo_ultima_leitura = millis(); 
+
+      // 1. LEITURA ADS1115
+      pacote_tx.a0 = ads1.readADC_SingleEnded(0);
+      pacote_tx.a1 = ads1.readADC_SingleEnded(1);
+      pacote_tx.a2 = ads1.readADC_SingleEnded(2);
+      pacote_tx.a3 = ads1.readADC_SingleEnded(3);
+      pacote_tx.a4 = ads2.readADC_SingleEnded(0);
+      pacote_tx.a5 = ads2.readADC_SingleEnded(1);
+      pacote_tx.a6 = ads2.readADC_SingleEnded(2);
+      pacote_tx.a7 = ads2.readADC_SingleEnded(3);
+
+      // 2. POPULAR VARIÁVEIS CAN
+      pacote_tx.ecu_uptime = ecu_uptime;
+      pacote_tx.engine_speed = engine_speed;
+      pacote_tx.map_press = map_press;
+      pacote_tx.iat = iat;
+      pacote_tx.clt = clt;
+      pacote_tx.tps = tps;
+      pacote_tx.lambda1 = lambda1;
+      pacote_tx.oil_press = oil_press;
+      pacote_tx.fuel_press = fuel_press;
+      pacote_tx.aux1_v = aux1_v;
+      pacote_tx.aux2_v = aux2_v;
+      pacote_tx.aux3_v = aux3_v;
+      pacote_tx.aux4_v = aux4_v;
+      pacote_tx.aux5_v = aux5_v;
+      pacote_tx.aux6_v = aux6_v;
+      pacote_tx.aux7_v = aux7_v;
+      pacote_tx.aux8_v = aux8_v;
+      pacote_tx.aux9_v = aux9_v;
+      pacote_tx.aux_out3_perc = aux_out3_perc;
+      pacote_tx.aux_out6_perc = aux_out6_perc;
+      pacote_tx.launch_control = launch_control;
+      pacote_tx.battery_v = battery_v;
+      pacote_tx.gps_date_utc = gps_date_utc;
+      pacote_tx.gps_lat = gps_lat;
+      pacote_tx.gps_lon = gps_lon;
+      pacote_tx.gps_speed = gps_speed;
+      pacote_tx.gps_time_utc = gps_time_utc;
+
+      // Calcula o checksum
+      pacote_tx.checksum = calcularChecksum((uint8_t*)&pacote_tx, sizeof(PacoteTelemetria) - 1);
+
+      // 3. ENVIO VIA LORA
+      Serial2.write((uint8_t*)&pacote_tx, sizeof(PacoteTelemetria));
+      
+      // 4. GRAVAÇÃO NO SD
+      File arquivo = SD.open("/telemetry.log", FILE_APPEND);
+      if (arquivo) {
+        arquivo.write((const uint8_t *)&pacote_tx, sizeof(PacoteTelemetria));
+        arquivo.close();
+      }
+      
+      i++; // Incrementa o contador apenas quando envia
+    }
+  } 
   
-  if (millis() - tempo_ultima_leitura >= intervalo_telemetria) {
-    tempo_ultima_leitura = millis(); 
-
-    // ========================================================
-    // 1. LEITURA DOS DADOS ANALÓGICOS (ADS1115)
-    // ========================================================
-    // A função readADC_SingleEnded retorna um int16_t cru (0 a ~26400 para 3.3V)
-    // Eles vão direto para o espaço de memória da Struct.
-    
-    // ========================================================
-    // 1. LEITURA DOS DADOS ANALÓGICOS (ADS1115) PACIFICADA
-    // ========================================================
-    // Dando 2ms para o multiplexador interno do ADS estabilizar entre as leituras
-    
-    pacote_tx.a0 = ads1.readADC_SingleEnded(0);
-    delay(2);
-    pacote_tx.a1 = ads1.readADC_SingleEnded(1);
-    delay(2);
-    pacote_tx.a2 = ads1.readADC_SingleEnded(2);
-    delay(2);
-    pacote_tx.a3 = ads1.readADC_SingleEnded(3);
-    delay(2);
-
-    pacote_tx.a4 = ads2.readADC_SingleEnded(0);
-    delay(2);
-    pacote_tx.a5 = ads2.readADC_SingleEnded(1);
-    delay(2);
-    pacote_tx.a6 = ads2.readADC_SingleEnded(2);
-    delay(2);
-    pacote_tx.a7 = ads2.readADC_SingleEnded(3);
-
-    // ========================================================
-    // 2. POPULAR A STRUCT COM VARIÁVEIS CAN
-    // ========================================================
-    pacote_tx.ecu_uptime = ecu_uptime;
-    pacote_tx.engine_speed = engine_speed;
-    pacote_tx.map_press = map_press;
-    pacote_tx.iat = iat;
-    pacote_tx.clt = clt;
-    pacote_tx.tps = tps;
-    pacote_tx.lambda1 = lambda1;
-    pacote_tx.oil_press = oil_press;
-    pacote_tx.fuel_press = fuel_press;
-    pacote_tx.aux1_v = aux1_v;
-    pacote_tx.aux2_v = aux2_v;
-    pacote_tx.aux3_v = aux3_v;
-    pacote_tx.aux4_v = aux4_v;
-    pacote_tx.aux5_v = aux5_v;
-    pacote_tx.aux6_v = aux6_v;
-    pacote_tx.aux7_v = aux7_v;
-    pacote_tx.aux8_v = aux8_v;
-    pacote_tx.aux9_v = aux9_v;
-    pacote_tx.aux_out3_perc = aux_out3_perc;
-    pacote_tx.aux_out6_perc = aux_out6_perc;
-    pacote_tx.launch_control = launch_control;
-    pacote_tx.battery_v = battery_v;
-    pacote_tx.gps_date_utc = gps_date_utc;
-    pacote_tx.gps_lat = gps_lat;
-    pacote_tx.gps_lon = gps_lon;
-    pacote_tx.gps_speed = gps_speed;
-    pacote_tx.gps_time_utc = gps_time_utc;
-
-    // Calcula o checksum
-    pacote_tx.checksum = calcularChecksum((uint8_t*)&pacote_tx, sizeof(PacoteTelemetria) - 1);
-
-     // ========================================================
-    // 3. ENVIO VIA LORA (UART2)
-    // ========================================================
-    Serial2.write((uint8_t*)&pacote_tx, sizeof(PacoteTelemetria));
-
-    // ========================================================
-    // 4. GRAVAÇÃO NO CARTÃO SD (VSPI)
-    // ========================================================
-    File arquivo = SD.open("/telemetry.log", FILE_APPEND);
-    if (arquivo) {
-      arquivo.write((const uint8_t *)&pacote_tx, sizeof(PacoteTelemetria));
-      arquivo.close();
-    } 
-  }
+  // O FreeRTOS agora consegue respirar aqui no final do loop
+  // sem acionar o Watchdog Timer.
 }

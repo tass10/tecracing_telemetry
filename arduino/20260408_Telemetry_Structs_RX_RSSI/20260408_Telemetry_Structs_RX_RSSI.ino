@@ -1,3 +1,5 @@
+// Código utilizado no  ESP32 do Sistema Receptor
+
 // ==========================================
 // ESTRUTURA DE DADOS BINÁRIA (73 BYTES)
 // ==========================================

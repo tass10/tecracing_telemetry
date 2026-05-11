@@ -1,10 +1,12 @@
+# Código principal para visualização em tempo real e datalogging
+
 import sys
 import serial
 import serial.tools.list_ports  # <-- NOVO: Para buscar as portas COM disponíveis automaticamente
 import time
 from datetime import datetime
 import os
-import struct # <-- IMPORTANTE: Módulo para lidar com dados binários em C/C++
+import struct 
 from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QLabel, QProgressBar, QComboBox, QToolBar # <-- NOVO: QComboBox e QToolBar
 from PyQt5.QtCore import QThread, pyqtSignal, pyqtSlot
 from PyQt5 import uic 
@@ -22,7 +24,7 @@ import random
 # '3h'  = 3 short int (gps lat, lon, speed)
 # 'H'   = 1 unsigned short (gps_time)
 # 'B'   = 1 unsigned char (checksum)
-# 'B'   = 1 unsigned char (RSSI injetado pelo módulo LoRa) <--- NOVO
+# 'B'   = 1 unsigned char (RSSI injetado pelo módulo LoRa)
 STRUCT_FORMAT = '< 2B 8h H 21h H 3h H B B'
 PACKET_SIZE = struct.calcsize(STRUCT_FORMAT) # Deve resultar em exatos 73 bytes
 

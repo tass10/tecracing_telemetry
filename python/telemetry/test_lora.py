@@ -1,3 +1,5 @@
+# Código para realizar os testes de distância do LoRa
+
 import sys
 import serial
 import serial.tools.list_ports

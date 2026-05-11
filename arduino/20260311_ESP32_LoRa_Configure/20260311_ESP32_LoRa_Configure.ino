@@ -1,3 +1,5 @@
+// Código para configurar os parâmetros do módulo LoRa através do ESP32
+
 /* 
 
 TABELA DE PARÂMETROS
