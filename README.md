@@ -3,6 +3,20 @@ Telemetry and DAQ System for FSAE BR Team TEC Racing
 
 # Resultados da Pesquisa:
 
+## Materiais de Apoio:
+
+### Esquemas Elétricos
+- [Sistema Receptor](Schematics/20260430_Telemetry_Schematic_Receiver_Tassio.PDF)
+- [Sistema Transmissor](Schematics/20260430_Telemetry_Schematic_Transmitter_Tassio.PDF)
+- [Sistema Transmissor Simplificado](Schematics/20260429_Telemetry_Simplified_Schematic_Transmitter_Leonardo.pdf)
+
+### Arquivos Gerber:
+- [Gerbers.zip](Gerbers/Gerbers.zip)
+
+### Modelos 3D:
+- [PCB.step](CAD/telemetry_board_3dmodel.step)
+- [PCB.stl](CAD/telemetry_board_3dmodel.stl)
+
 ## Desempenho da Comunicação a Distância:
 <p align="justify"> Para avaliar a performance do sistema, foi construído um protótipo com os componentes principais e foi realizado um teste de comunicação, consistindo no envio de 1.000 mensagens para o Sistema Receptor em distâncias predefinidas, variando de 50 m a 250 m, com incrementos regulares de 50 metros. O Sistema Receptor identifica quantas mensagens foram recebidas e informa a potência do sinal recebido para cada mensagem e porcentagem de erro total.</p>
 
