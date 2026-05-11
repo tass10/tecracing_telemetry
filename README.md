@@ -1,5 +1,5 @@
 # TR08 Telemetry System
-US: Telemetry and DAQ System for FSAE BR Team TEC Racing
+US: Telemetry and DAQ System for FSAE BR Team TEC Racing  
 PT: Sistema de Telemetria e Aquisição de Dados para a equipe de FSAE TEC RACING
 
 # Resultados da Pesquisa:
@@ -12,10 +12,7 @@ PT: Sistema de Telemetria e Aquisição de Dados para a equipe de FSAE TEC RACIN
 4. [PCB](#4-pcb)
 5. [Dashboard](#5-dashboard)
 
-
-
-
-
+<br/>
 
 ## 1. Materiais de Apoio:
 
