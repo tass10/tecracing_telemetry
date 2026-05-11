@@ -1,3 +1,5 @@
+# Código auxiliar para definição dos gauges na interface Qt
+
 from PyQt5.QtWidgets import QWidget
 from PyQt5.QtGui import QPainter, QPen, QColor, QFont
 from PyQt5.QtCore import Qt, QRectF
