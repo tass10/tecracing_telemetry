@@ -7,7 +7,7 @@ PT: Sistema de Telemetria e Aquisição de Dados para a equipe de FSAE TEC RACIN
 ## Sumário:
 
 1. [Materiais de Apoio](#materiais-de-apoio)
-2. [Desempenho da Comunicação a Distância](desempenho-da-comunicação-a-distancia)
+2. [Desempenho da Comunicação a Distância](desempenho-da-comunicacao-a-distancia)
 3. [Modelagem de Filtros](#modelagem-de-filtros)
 4. [PCB](#pcb)
 5. [Dashboard](#dashboard)
