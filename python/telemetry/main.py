@@ -11,6 +11,36 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QLa
 from PyQt5.QtCore import QThread, pyqtSignal, pyqtSlot
 from PyQt5 import uic 
 import random
+import numpy as np
+from scipy import signal
+
+# =======================================================
+# CLASSE DO FILTRO IIR EM TEMPO REAL
+# =======================================================
+class RealTimeIIR:
+    """
+    Mantém o estado (memória) de um filtro digital IIR tipo SOS (Second Order Sections)
+    para filtrar sinais amostra por amostra em tempo real.
+    """
+    def __init__(self, sos_matrix, gains):
+        self.sos = np.array(sos_matrix)
+        self.total_gain = np.prod(gains)
+        
+        # Calcula as condições iniciais ideais do filtro
+        self.zi_base = signal.sosfilt_zi(self.sos)
+        self.zi = np.copy(self.zi_base)
+        self.first_run = True
+
+    def update(self, val):
+        if self.first_run:
+            # Na primeira leitura, assume que o sinal sempre esteve nesse valor
+            self.zi = self.zi_base * val
+            self.first_run = False
+        
+        # Filtra a amostra atual e guarda o novo estado (zi) para a próxima iteração
+        filtered, self.zi = signal.sosfilt(self.sos, [val], zi=self.zi)
+        
+        return filtered[0] * self.total_gain
 
 # =======================================================
 # FORMATO DA STRUCT DE TELEMETRIA
@@ -32,7 +62,7 @@ PACKET_SIZE = struct.calcsize(STRUCT_FORMAT) # Deve resultar em exatos 73 bytes
 # 1. THREAD DE AQUISIÇÃO DE DADOS (Background)
 # =======================================================
 class SerialWorker(QThread):
-    data_received = pyqtSignal(int, int, int, int, int, int, int, int, int, int, 
+    data_received = pyqtSignal(float, float, int, float, int, int, int, int, int, int, 
                                float, float, float, float, float, float, float, 
                                float, float, float, float, float, float, float, 
                                float, float, float, float, int, float, int, int, 
@@ -45,6 +75,31 @@ class SerialWorker(QThread):
         self.is_running = True
         self.simulation_mode = simulation_mode 
 
+        # Filtro de Água (IIR Ordem 5 - Fpass 0.5Hz)
+        sos_agua = [
+            [1.0, 2.0, 1.0, 1.0, -1.451709412909310, 0.716794312985863],
+            [1.0, 2.0, 1.0, 1.0, -1.181098283900234, 0.396769077093499],
+            [1.0, 1.0, 0.0, 1.0, -0.551295907484470, 0.0]
+        ]
+        g_agua = [0.066271225019138, 0.053917698298316, 0.224352046257765, 1.0]
+        
+        self.filtro_temp_in = RealTimeIIR(sos_agua, g_agua)
+        self.filtro_temp_out = RealTimeIIR(sos_agua, g_agua)
+
+        # Filtro de Freio (IIR Ordem 4 - Fpass 1.5Hz)
+        sos_freio = [
+            [1.0000, 2.0000, 1.0000, 1.0000, -0.039197619731677, 0.446609698036549],
+            [1.0000, 2.0000, 1.0000, 1.0000, -0.028173255014404, 0.039749459484601]
+        ]
+        g_freio = [0.351853019576218, 0.252894051117549, 1.000000000000000]
+        
+        self.filtro_freio = RealTimeIIR(sos_freio, g_freio)
+
+        # Parâmetros para conversão de dados brutos em valores físicos. Obtidos através de testes em laboratório
+        self.paramRadiadorIn = 0.123456
+        self.paramRadiadorOut = 0.123456
+        self.paramPressaoFreio = 0.123456
+    
     def run(self):
         ser = None
         
@@ -120,14 +175,19 @@ class SerialWorker(QThread):
                                         dados = struct.unpack(STRUCT_FORMAT, pacote_completo)
                                         
                                         # -- VARIÁVEIS DOS ADCs --
-                                        adc_a0 = dados[2]
-                                        adc_a1 = dados[3]
+                                        adc_a0_raw = dados[2]
+                                        adc_a1_raw = dados[3]
                                         adc_a2 = dados[4]
-                                        adc_a3 = dados[5]
+                                        adc_a3_raw = dados[5]
                                         adc_a4 = dados[6]
                                         adc_a5 = dados[7]
                                         adc_a6 = dados[8]
                                         adc_a7 = dados[9]
+
+                                        # Aplica os filtros nos sinais de interesse
+                                        adc_a0_filtrado = self.filtro_temp_in.update(adc_a0_raw * self.paramRadiadorIn)
+                                        adc_a1_filtrado = self.filtro_temp_out.update(adc_a1_raw * self.paramRadiadorOut)
+                                        adc_a3_filtrado = self.filtro_freio.update(adc_a3_raw * self.paramPressaoFreio)
 
                                         # -- VARIÁVEIS DO CAN --
                                         ecu_uptime = dados[10]
@@ -163,7 +223,7 @@ class SerialWorker(QThread):
                                         print(dados)
 
                                         # Emite para a interface gráfica 
-                                        self.data_received.emit(int(adc_a0), int(adc_a1), int(adc_a2), int(adc_a3), int(adc_a4), int(adc_a5), int(adc_a6), 
+                                        self.data_received.emit(float(adc_a0_filtrado), float(adc_a1_filtrado), int(adc_a2), float(adc_a3_filtrado), int(adc_a4), int(adc_a5), int(adc_a6), 
                                                                 int(adc_a7), int(ecu_uptime), int(engine_speed), float(map_press), float(iat), float(clt),
                                                                 float(tps), float(lambda1), float(oil_press), float(fuel_press), float(aux1_v), float(aux2_v),
                                                                 float(aux3_v), float(aux4_v), float(aux5_v), float(aux6_v), float(aux7_v), float(aux8_v),
@@ -299,7 +359,7 @@ class Dashboard(QMainWindow):
         self.serial_thread.start()
 
 
-    @pyqtSlot(int, int, int, int, int, int, int, int, int, int, 
+    @pyqtSlot(float, float, int, float, int, int, int, int, int, int, 
                 float, float, float, float, float, float, float, 
                 float, float, float, float, float, float, float, 
                 float, float, float, float, int, float, int, int, 
