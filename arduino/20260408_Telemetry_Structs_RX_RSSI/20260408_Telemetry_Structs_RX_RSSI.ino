@@ -3,7 +3,7 @@
 // ==========================================
 // ESTRUTURA DE DADOS BINÁRIA (73 BYTES)
 // ==========================================
-// Esta struct DEVE ser idêntica à do Transmissor
+// Struct idêntica à do Transmissor
 typedef struct __attribute__((packed)) {
   uint8_t header[2]; // 0xAA, 0x55
   

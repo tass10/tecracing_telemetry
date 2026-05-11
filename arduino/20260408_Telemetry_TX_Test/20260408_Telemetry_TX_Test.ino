@@ -76,7 +76,7 @@ const int pino_cs_mcp = 21;
 // ==========================================
 // DEFINIÇÃO DE PINOS - BARRAMENTO I2C (ADS1115)
 // ==========================================
-const int PIN_SDA = 22; // Remapeado para não conflitar com o CS do MCP
+const int PIN_SDA = 22;
 const int PIN_SCL = 4;
 
 // Pinos UART2 para o Módulo LoRa
@@ -157,7 +157,6 @@ uint8_t calcularChecksum(uint8_t* dados, size_t tamanho_sem_checksum) {
 // TASK DO FREERTOS (RODA NO NÚCLEO 0) - INTACTA
 // ==========================================
 void TaskLeituraCAN(void *pvParameters) {
-  // ... (Mantenha o conteúdo exato que você já tinha aqui na Task do CAN) ...
   for (;;) { 
     while (mcp2515.readMessage(&canMsg) == MCP2515::ERROR_OK) {
       if (canMsg.can_id == 0x1E0 && canMsg.can_dlc == 8) {
@@ -229,17 +228,16 @@ void setup() {
   SPI.begin(pino_sck_vspi, pino_miso_vspi, pino_mosi_vspi);
   hspi.begin(pino_sck_hspi, pino_miso_hspi, pino_mosi_hspi, pino_cs_mcp);
 
-// ========================================================
+  // ========================================================
   // INICIALIZAÇÃO I2C E ADS1115
   // ========================================================
   Wire.begin(PIN_SDA, PIN_SCL); 
-  Wire.setClock(100000); // FORÇA o barramento para 100 kHz (Estabilidade máxima)
-  Wire.setTimeOut(20000); // ADICIONE ESTA LINHA: Aumenta o tempo limite do I2C
+  Wire.setClock(100000); // Barramento em 100 kHz (Estabilidade máxima)
+  Wire.setTimeOut(20000); // Tempo limite do I2C
   
   ads1.setDataRate(RATE_ADS1115_860SPS);
   ads2.setDataRate(RATE_ADS1115_860SPS);
 
-  //Serial.print("Inicializando ADS1115... ");
   // Passa o &Wire para garantir que a biblioteca use os pinos 22 e 4
   if (!ads1.begin(0x48, &Wire)) { 
     Serial.println("Falha no ADS 1 (0x48)!");
@@ -253,7 +251,6 @@ void setup() {
   // ========================================================
   // INICIALIZAÇÃO CAN E SD
   // ========================================================
-  //Serial.print("Inicializando MCP2515 no HSPI... ");
   mcp2515.reset();
   if (mcp2515.setBitrate(CAN_500KBPS, MCP_8MHZ) != MCP2515::ERROR_OK) {
     Serial.println("ERRO de Bitrate no CAN!");
@@ -264,7 +261,6 @@ void setup() {
     Serial.println("FALHA no MCP2515!");
   }
 
-  //Serial.print("Inicializando SD Card no VSPI... ");
   if (!SD.begin(pino_cs_sd, SPI, 4000000)) {
     Serial.println("FALHA no SD Card!");
   } else {
@@ -282,11 +278,7 @@ void setup() {
 // ==========================================
 // LOOP PRINCIPAL (RODA NO NÚCLEO 1)
 // ==========================================
-// ==========================================
-// LOOP PRINCIPAL (RODA NO NÚCLEO 1)
-// ==========================================
 void loop() {
-  // Substituímos o while() por um if() simples
   if (i < amostras) {
     
     if (millis() - tempo_ultima_leitura >= intervalo_telemetria) {
@@ -347,7 +339,4 @@ void loop() {
       i++; // Incrementa o contador apenas quando envia
     }
   } 
-  
-  // O FreeRTOS agora consegue respirar aqui no final do loop
-  // sem acionar o Watchdog Timer.
 }

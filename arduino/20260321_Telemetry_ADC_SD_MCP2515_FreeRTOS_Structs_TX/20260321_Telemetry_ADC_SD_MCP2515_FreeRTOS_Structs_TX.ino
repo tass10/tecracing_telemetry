@@ -76,7 +76,7 @@ const int pino_cs_mcp = 21;
 // ==========================================
 // DEFINIÇÃO DE PINOS - BARRAMENTO I2C (ADS1115)
 // ==========================================
-const int PIN_SDA = 22; // Remapeado para não conflitar com o CS do MCP
+const int PIN_SDA = 22;
 const int PIN_SCL = 4;
 
 // Pinos UART2 para o Módulo LoRa
@@ -154,7 +154,6 @@ uint8_t calcularChecksum(uint8_t* dados, size_t tamanho_sem_checksum) {
 // TASK DO FREERTOS (RODA NO NÚCLEO 0) - INTACTA
 // ==========================================
 void TaskLeituraCAN(void *pvParameters) {
-  // ... (Mantenha o conteúdo exato que você já tinha aqui na Task do CAN) ...
   for (;;) { 
     while (mcp2515.readMessage(&canMsg) == MCP2515::ERROR_OK) {
       if (canMsg.can_id == 0x1E0 && canMsg.can_dlc == 8) {
@@ -226,12 +225,12 @@ void setup() {
   SPI.begin(pino_sck_vspi, pino_miso_vspi, pino_mosi_vspi);
   hspi.begin(pino_sck_hspi, pino_miso_hspi, pino_mosi_hspi, pino_cs_mcp);
 
-// ========================================================
+  // ========================================================
   // INICIALIZAÇÃO I2C E ADS1115
   // ========================================================
   Wire.begin(PIN_SDA, PIN_SCL); 
-  Wire.setClock(100000); // FORÇA o barramento para 100 kHz (Estabilidade máxima)
-  Wire.setTimeOut(20000); // ADICIONE ESTA LINHA: Aumenta o tempo limite do I2C
+  Wire.setClock(100000); // Barramento em 100 kHz (Estabilidade máxima)
+  Wire.setTimeOut(20000); //Aumenta o tempo limite do I2C
   
   ads1.setDataRate(RATE_ADS1115_860SPS);
   ads2.setDataRate(RATE_ADS1115_860SPS);
@@ -283,15 +282,9 @@ void loop() {
   
   if (millis() - tempo_ultima_leitura >= intervalo_telemetria) {
     tempo_ultima_leitura = millis(); 
-
-    // ========================================================
-    // 1. LEITURA DOS DADOS ANALÓGICOS (ADS1115)
-    // ========================================================
-    // A função readADC_SingleEnded retorna um int16_t cru (0 a ~26400 para 3.3V)
-    // Eles vão direto para o espaço de memória da Struct.
     
     // ========================================================
-    // 1. LEITURA DOS DADOS ANALÓGICOS (ADS1115) PACIFICADA
+    // 1. LEITURA DOS DADOS ANALÓGICOS (ADS1115)
     // ========================================================
     // Dando 2ms para o multiplexador interno do ADS estabilizar entre as leituras
     
