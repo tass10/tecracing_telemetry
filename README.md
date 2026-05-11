@@ -1,11 +1,22 @@
 # TR08 Telemetry System
-Telemetry and DAQ System for FSAE BR Team TEC Racing
+US: Telemetry and DAQ System for FSAE BR Team TEC Racing
+PT: Sistema de Telemetria e Aquisição de Dados para a equipe de FSAE TEC RACING
 
 # Resultados da Pesquisa:
 
+## Sumário:
+
+1. [Materiais de Apoio](#modelagem-de-filtros)
+
+Link to the helpful section: [Link Text](#thisll-be-a-helpful-section-about-the-greek-letter-Θ).
+
+Link to the first non-unique section: [Link Text](#this-heading-is-not-unique-in-the-file).
+
+Link to the second non-unique section: [Link Text](#this-heading-is-not-unique-in-the-file-1).
+
 ## Materiais de Apoio:
 
-### Esquemas Elétricos
+### Esquemas Elétricos:
 - [Sistema Receptor](Schematics/20260430_Telemetry_Schematic_Receiver_Tassio.PDF)
 - [Sistema Transmissor](Schematics/20260430_Telemetry_Schematic_Transmitter_Tassio.PDF)
 - [Sistema Transmissor Simplificado](Schematics/20260429_Telemetry_Simplified_Schematic_Transmitter_Leonardo.pdf)
@@ -20,7 +31,7 @@ Telemetry and DAQ System for FSAE BR Team TEC Racing
 ### Códigos:
 - [C - ESP32 Transmissor](arduino/20260321_Telemetry_ADC_SD_MCP2515_FreeRTOS_Structs_TX/20260321_Telemetry_ADC_SD_MCP2515_FreeRTOS_Structs_TX.ino)
 - [C - ESP32 Receptor](arduino/20260408_Telemetry_Structs_RX_RSSI/20260408_Telemetry_Structs_RX_RSSI.ino)
-- [Python - Interface e Datalogging](pytohn/telemetry/main.py)
+- [Python - Interface e Datalogging](python/telemetry/main.py)
 
 ## Desempenho da Comunicação a Distância:
 <p align="justify"> Para avaliar a performance do sistema, foi construído um protótipo com os componentes principais e foi realizado um teste de comunicação, consistindo no envio de 1.000 mensagens para o Sistema Receptor em distâncias predefinidas, variando de 50 m a 250 m, com incrementos regulares de 50 metros. O Sistema Receptor identifica quantas mensagens foram recebidas e informa a potência do sinal recebido para cada mensagem e porcentagem de erro total.</p>
