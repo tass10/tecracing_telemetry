@@ -51,6 +51,22 @@
 
 ![Desempenho da Comunicação a Distância.](Imagens/FFT_Pressao_da_Linha_de_Freio.png)
 
+### Função de Transferência - Filtro FIR - Temperatura da Água - Ordem 14:
+
+$$H_{água}(z) = -0,0142 - 0,0243z^{-1} - 0,0180z^{-2} + 0,0233z^{-3} + 0,1000z^{-4} + 0,1873z^{-5} + 0,2459z^{-6} + 0,2459z^{-7} + 0,1873z^{-8} + 0,1000z^{-9} + 0,0233z^{-10} - 0,0180z^{-11} - 0,0243z^{-12} - 0,0142z^{-13}$$
+
+### Função de Transferência - Filtro FIR - Pressão de Freio - Ordem 6:
+
+$$H_{freio}(z) = -0,0380 - 0,0366z^{-1} + 0,2960z^{-2} + 0,5572z^{-3} + 0,2960z^{-4} - 0,0366z^{-5} - 0,0380z^{-6}$$
+
+### Função de Transferência - Filtro IIR - Temperatura da Água - Ordem 5:
+
+$$H_{água}(z) = 0,0008 \left( \frac{1 + 2z^{-1} + z^{-2}}{1 - 1,4517z^{-1} + 0,7168z^{-2}} \right) \left( \frac{1 + 2z^{-1} + z^{-2}}{1 - 1,1811z^{-1} + 0,3968z^{-2}} \right) \left( \frac{1 + z^{-1}}{1 - 0,5513z^{-1}} \right)$$
+
+### Função de Transferência - Filtro IIR - Pressão de Freio - Ordem 4:
+
+$$H_{freio}(z) = 0,0890 \left( \frac{1 + 2z^{-1} + z^{-2}}{1 - 0,0392z^{-1} + 0,4466z^{-2}} \right) \left( \frac{1 + 2z^{-1} + z^{-2}}{1 - 0,0282z^{-1} + 0,0397z^{-2}} \right)$$
+
 <p align="justify">Testou-se computacionalmente a aplicação dos filtros FIR e IIR modelados no MATLAB. Verificou-se que os filtros IIR atingiram um desempenho de atenuação de ruído de alta frequência estatisticamente semelhante aos filtros FIR de maior ordem. Devido a essa similaridade de eficiência atrelada a uma considerável redução da complexidade algorítmica e custo computacional, a topologia IIR foi selecionada e implementada de forma definitiva no código receptor. </p>
 
 ### Simulação Filtros FIR e IIR - Temperatura da Água:
