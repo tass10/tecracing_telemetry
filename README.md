@@ -21,9 +21,6 @@
 - [Sistema Transmissor](Schematics/20260430_Telemetry_Schematic_Transmitter_Tassio.PDF)
 - [Sistema Transmissor Simplificado](Schematics/20260429_Telemetry_Simplified_Schematic_Transmitter_Leonardo.pdf)
 
-### Arquivos Gerber:
-- [Gerbers.zip](Gerbers/Gerbers.zip)
-
 ### Modelos 3D:
 - [PCB.step](CAD/telemetry_board_3dmodel.step)
 - [PCB.stl](CAD/telemetry_board_3dmodel.stl)
