@@ -16,7 +16,7 @@ rssi_min = [-53,    -37,    -42,    -40,    -77]
 rssi_max = [-42,    -32,    -36,    -36,    -51]
 
 # CRIAÇÃO DO GRÁFICO
-fig, ax1 = plt.subplots(figsize=(10, 5))
+fig, ax1 = plt.subplots(figsize=(10, 4))
 
 # Configuração do Eixo Esquerdo (Sinal RSSI)
 cor_rssi = '#1f77b4'
@@ -48,7 +48,7 @@ ax2.set_ylim(0, 5)
 # Unificando as legendas no mesmo quadro
 linhas1, labels1 = ax1.get_legend_handles_labels()
 linhas2, labels2 = ax2.get_legend_handles_labels()
-ax1.legend(linhas1 + linhas2, labels1 + labels2, loc='upper center', bbox_to_anchor=(0.5, 1.15), ncol=3, fontsize=12)
+ax1.legend(linhas1 + linhas2, labels1 + labels2, loc='upper center', bbox_to_anchor=(0.5, 1.18), ncol=3, fontsize=12)
 
 # Título e ajustes finais
 # plt.title('Desempenho da Comunicação à Distância', fontsize=14, fontweight='bold', pad=60)
